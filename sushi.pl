@@ -1,5 +1,6 @@
 :- use_module(library(clpfd)).
 :- use_module(library(lists)).
+:- use_module(library(between)).
 
 
 /*
@@ -36,49 +37,121 @@
 
 */
 
-generateMealsSmall([[200, 1], [250, 2], [300, 3], [150, 2], [175, 1]]).
+generateMealsSmall([200, 1, 250, 2, 300, 3, 150, 2, 175, 1]).
 
 generateChefsSmall([4000, 2000, 1000]).
 
-generateChefMealsSmall([[1, 2, 3], [3, 2], [1, 5, 4]]).
+generateChefMealsSmall([1, 2, 3, 3, 2, 0, 1, 5, 4]).
 
-generateMealsListSmall([1-1, 2-1]).
+generateMealsListSmall([1-1, 2-1, 3-1]).
 
-generateSmall(Meals, Chefs, ChefMeals):-	generateMealsSmall(Meals),
-											generateChefsSmall(Chefs),
-											generateChefMealsSmall(ChefMeals).
+generateSmall(Meals, Chefs, ChefMeals, MealsList):-	generateMealsSmall(Meals),
+													generateChefsSmall(Chefs),
+													generateChefMealsSmall(ChefMeals),
+													generateMealsListSmall(MealsList).
 
 chefIdsToSalaries([], [], _).
+%chefIdsToSalaries([Id|OtherIds], [Salary|OtherSalaries], Chefs):-	Id #= 0, Salary #= 9999, /*write('00000'), nl, */chefIdsToSalaries(OtherIds, OtherSalaries, Chefs).
 chefIdsToSalaries([Id|OtherIds], [Salary|OtherSalaries], Chefs):-	element(Id, Chefs, Salary),
 																	chefIdsToSalaries(OtherIds, OtherSalaries, Chefs).
 
 sumChefsSalaries(Chefs, ChefIds, Sum):-	chefIdsToSalaries(ChefIds, Salaries, Chefs),
 										sum(Salaries, #=, Sum).
 
-solve(Meals, Chefs, ChefMeals):-	length(Chefs, LenChefs),
-							
-									% Decision Variables
-									length(ResChefs, LenChefs),
-									domain(ResChefs, 1, LenChefs),
+
+mealsListToDomains([], [], _).
+mealsListToDomains([Id-Cardinality|OtherMeals], [Id-NewCard|List], Max):-	NewCard in Cardinality..Max,
+																			mealsListToDomains(OtherMeals, List, Max).
+
+/* 														mealsListToDomains(MealsList, MealsListFinal, MaxMeals),
+														global_cardinality(ResMeals, MealsListFinal), */
+
+mealIdsToProfit([], [], _).
+mealIdsToProfit([MealId|OtherMealIds], [Profit|OtherProfits], Meals):-	Idx #= MealId * 2 - 1,
+																		element(Idx, Meals, Profit),
+																		mealIdsToProfit(OtherMealIds, OtherProfits, Meals).
+
+sumMealsProfit(MealIds, Meals, Sum):-	mealIdsToProfit(MealIds, Profits, Meals),
+										sum(Profits, #=, Sum).
+
+mealIdsToType([], _, []).
+mealIdsToType([MealId|OtherMealIds], Meals, [Type|OtherTypes]):-	Idx #= MealId * 2,
+																	element(Idx , Meals, Type),
+																	mealIdsToType(OtherMealIds, Meals, OtherTypes).
+
+ensureMeals(_, _, _, 0).
+ensureMeals(Idx, ChefMeals, ResMeals, N):-	CurrentIdx #= Idx + N,
+											element(CurrentIdx, ChefMeals, Meal),
+											count(Meal, ResMeals, #>, 0),
+											N1 is N - 1,
+											ensureMeals(Idx , ChefMeals, ResMeals, N1).
+
+ensureChefMealsOnly([], _, _).
+ensureChefMealsOnly([ChefId|OtherChefIds], ChefMeals, ResMeals):-	Idx #= ChefId * 3 - 3,
+																	ensureMeals(Idx, ChefMeals, ResMeals, 3),
+																	ensureChefMealsOnly(OtherChefIds, ChefMeals, ResMeals).
+
+getMeals(_, _, [], 0).
+getMeals(Idx, ChefMeals, [Meal|Meals], N):-	ActualIdx #= Idx - N,
+											element(ActualIdx, ChefMeals, Meal),
+											Meal #\= 0, !,
+											N1 is N - 1,
+											getMeals(Idx, ChefMeals, Meals, N1).
+getMeals(_, _, [], _).
+
+getChefsMeals([], _, Meals, MealsFinal):-	sort(Meals, MealsFinal).
+getChefsMeals([ChefId|OtherChefIds], ChefMeals, Meals, MealsFinal):-	Idx #= ChefId * 3 + 1,
+																		getMeals(Idx, ChefMeals, TempMeals, 3),
+																		append(Meals, TempMeals, NewMeals),
+																		getChefsMeals(OtherChefIds, ChefMeals, NewMeals, MealsFinal).
 
 
-									% Restrictions
-									all_distinct(ResChefs),
+
+solve(MaxMeals, Meals, Chefs, ChefMeals, MealsList):-	length(Chefs, LenChefs),
+														length(Meals, TempLenMeals),
+														LenMeals #= TempLenMeals / 2,
+														mealsListToDomains(MealsList, MealsListFinal, MaxMeals),
 
 
-									% Evaluation
-									sumChefsSalaries(Chefs, ResChefs, Sum),
+														% Decision Variables
+														length(ResChefs, LenChefs),
+														domain(ResChefs, 1, LenChefs),
+														length(ResMeals, MaxMeals),
+														domain(ResMeals, 1, LenMeals),
 
 
-									%Labeling
-									labeling([minimize(Sum)], ResChefs),
-									write(ResChefs), nl,
-									write(Sum), nl
-									.
+														% Restrictions
+														all_distinct_except_0(ResChefs),
+														mealIdsToType(ResMeals, Meals, Types),
+														global_cardinality(Types, MealsListFinal),
+														%ensureChefMealsOnly(ResChefs, ChefMeals, ResMeals),
+														getChefsMeals(ResChefs, ChefMeals, [], CookMeals),
+														mealIdsToType(CookMeals, Meals, CookTypes),
+														%global_cardinality(CookTypes, MealsListFinal),
+
+														% Evaluation
+														sumChefsSalaries(Chefs, ResChefs, SalariesSum),
+														sumMealsProfit(ResMeals, Meals, MealsSum),
+														Profit #= MealsSum - SalariesSum,
+
+
+														%Labeling
+														append(ResChefs, ResMeals, Final),
+														%labeling([maximize(MealsSum)], ResMeals),
+														%labeling([maximize(MealsSum), minimize(SalariesSum)], Final),
+														labeling([maximize(Profit)], Final),
+														%labeling([minimize(SalariesSum)], ResChefs),
+														%labeling([], ResMeals),
+														write(ResChefs), nl,
+														write(Profit), nl,
+														write(ResMeals), nl,
+														write(MealsSum), nl,
+														write(SalariesSum), nl
+														.
 
 
 
-test_solve:- generateSmall(Meals, Chefs, ChefMeals), solve(Meals, Chefs, ChefMeals).
+test_solve:- generateSmall(Meals, Chefs, ChefMeals, MealsList), solve(9, Meals, Chefs, ChefMeals, MealsList).
 
 /*
 generateMealsSmall([[1, 400, 1], [2, 450, 2], [3, 385, 2], [4, 287, 1]]).
