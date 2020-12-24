@@ -37,6 +37,11 @@
 
 */
 
+/*
+	ResChefs - lista de 0s e 1s
+	ResMeals - lista de 0s e 1s
+*/
+
 generateMealsSmall([200, 1, 250, 2, 300, 3, 150, 2, 175, 1]).
 
 generateChefsSmall([4000, 2000, 1000]).
@@ -51,13 +56,13 @@ generateSmall(Meals, Chefs, ChefMeals, MealsList):-	generateMealsSmall(Meals),
 													generateMealsListSmall(MealsList).
 
 chefIdsToSalaries([], [], _).
-%chefIdsToSalaries([Id|OtherIds], [Salary|OtherSalaries], Chefs):-	Id #= 0, Salary #= 9999, /*write('00000'), nl, */chefIdsToSalaries(OtherIds, OtherSalaries, Chefs).
 chefIdsToSalaries([Id|OtherIds], [Salary|OtherSalaries], Chefs):-	element(Id, Chefs, Salary),
+																	chefIdsToSalaries(OtherIds, OtherSalaries, Chefs).
+chefIdsToSalaries([Id|OtherIds], [Salary|OtherSalaries], Chefs):-	Id #= 0, Salary #= 99999,
 																	chefIdsToSalaries(OtherIds, OtherSalaries, Chefs).
 
 sumChefsSalaries(Chefs, ChefIds, Sum):-	chefIdsToSalaries(ChefIds, Salaries, Chefs),
 										sum(Salaries, #=, Sum).
-
 
 mealsListToDomains([], [], _).
 mealsListToDomains([Id-Cardinality|OtherMeals], [Id-NewCard|List], Max):-	NewCard in Cardinality..Max,
@@ -85,26 +90,110 @@ ensureMeals(Idx, ChefMeals, ResMeals, N):-	CurrentIdx #= Idx + N,
 											count(Meal, ResMeals, #>, 0),
 											N1 is N - 1,
 											ensureMeals(Idx , ChefMeals, ResMeals, N1).
-
+/*
 ensureChefMealsOnly([], _, _).
 ensureChefMealsOnly([ChefId|OtherChefIds], ChefMeals, ResMeals):-	Idx #= ChefId * 3 - 3,
 																	ensureMeals(Idx, ChefMeals, ResMeals, 3),
 																	ensureChefMealsOnly(OtherChefIds, ChefMeals, ResMeals).
-
-getMeals(_, _, [], 0).
-getMeals(Idx, ChefMeals, [Meal|Meals], N):-	ActualIdx #= Idx - N,
-											element(ActualIdx, ChefMeals, Meal),
-											Meal #\= 0, !,
+*/
+getMeals(_, _, _, 0).
+getMeals(Idx, ChefMeals, [Meal|Meals], N):-	N >= 0,
+											ActualIdx #= Idx - N,
+											element(ActualIdx, ChefMeals, TempMeal),
+											TempMeal #\= 0, !,
+											Meal #= TempMeal,
 											N1 is N - 1,
 											getMeals(Idx, ChefMeals, Meals, N1).
-getMeals(_, _, [], _).
+getMeals(_, _, _, _).
 
-getChefsMeals([], _, Meals, MealsFinal):-	sort(Meals, MealsFinal).
-getChefsMeals([ChefId|OtherChefIds], ChefMeals, Meals, MealsFinal):-	Idx #= ChefId * 3 + 1,
-																		getMeals(Idx, ChefMeals, TempMeals, 3),
+getChefsMeals([], _, _):- !.
+getChefsMeals([ChefId|OtherChefIds], ChefMeals, [Meal1, Meal2, Meal3|Meals]):-	Idx #= ChefId * 3 + 1,
+															getMeals(Idx, ChefMeals, [Meal1, Meal2, Meal3], 3), !,
+															getChefsMeals(OtherChefIds, ChefMeals, Meals).
+
+fillMeals([]).
+fillMeals([Meal|OtherMeals]):-	Meal #= 0,
+								fillMeals(OtherMeals).
+fillMeals([Meal|OtherMeals]):-	fillMeals(OtherMeals).
+
+
+ensureAllMealsAreCooked:-!.
+
+testGetMeals:-	ResMeals = [A, B, C, D, E, F, G], getChefsMeals([1, 2], [1, 2, 3, 3, 2, 0, 1, 5, 4], ResMeals), fillMeals(ResMeals), write(ResMeals), nl.
+
+
+% ir buscar chef meals
+% transformar em set e dizer que todos os elementos do ResMeals têm que ser iguais a um dos chef meals
+% usar in_set
+
+
+%ensureChefMealsOnly(ChefMeals, ResMeals)
+ensureChefMealsOnly(_, []).
+ensureChefMealsOnly(ChefMealsSet, [Meal|OtherMeals]):-	Meal in_set ChefMealsSet,
+														ensureChefMealsOnly(ChefMealsSet, OtherMeals).
+
+newGetMeals(_, _, [], 0).
+newGetMeals(Idx, ChefMeals, [Meal|Meals], N):-	N >= 0,
+												ActualIdx #= Idx - N,
+												element(ActualIdx, ChefMeals, Meal),
+												Meal #\= 0, !,
+												N1 is N-1,
+												newGetMeals(Idx, ChefMeals, Meals, N1).
+newGetMeals(_, _, [], _).
+
+newGetChefMeals([], _, Meals, Meals).
+newGetChefMeals([ChefId|OtherChefIds], ChefMeals, Meals, MealsFinal):-	Idx #= ChefId * 3 + 1,
+																		newGetMeals(Idx, ChefMeals, TempMeals, 3),
 																		append(Meals, TempMeals, NewMeals),
-																		getChefsMeals(OtherChefIds, ChefMeals, NewMeals, MealsFinal).
+																		newGetChefMeals(OtherChefIds, ChefMeals, NewMeals, MealsFinal).
 
+/*
+
+
+	Chefs
+
+	Tem que haver pelo menos Xi pratos do tipo i
+
+
+
+
+*/
+
+ensureAtLeastEqualToOne(Var, []):-	Var #= 0.
+ensureAtLeastEqualToOne(Var, [Value|OtherValues]):-	Var #= Value.							
+ensureAtLeastEqualToOne(Var, [Value|OtherValues]):-	ensureAtLeastEqualToOne(Var, OtherValues).
+
+restrictList([], _).
+restrictList([H|T], ValuesList):-	ensureAtLeastEqualToOne(H, ValuesList),
+									restrictList(T, ValuesList).
+
+test_restrict:-	List = [A, B, C, D],
+				domain(List, 0, 10),
+				Values = [5, 2, 9],
+				all_distinct_except_0(List),
+				restrictVars(Values, List),
+				%restrictList(List, Values),
+				labeling([maximize(B)], List),
+				write(List), nl.
+
+count_equals(_, [], 0).
+count_equals(Val, [H|T], Count) :-
+    Val #= H #<=> B,
+    Count #= Count1 + B,
+    count_equals(Val, T, Count1).
+
+
+restrictVars(_, []).
+restrictVars(ValuesList, [Var|OtherVars]):-     count_equals(Var, ValuesList, Count),
+                                                Count #= 1,
+                                                restrictVars(ValuesList, OtherVars).
+restrictVars(_, [Var|OtherVars]):-  Var #= 0.
+
+% No ResMeals tem que haver menos de MaxMeals pratos e só podem aparecer lá pratos que estejam em CookMeals e tem que satisfazer a lista de tipos de pratos
+restrictResMeals(ResMeals, CookMeals, Meals, TypesList):-	all_distinct_except_0(ResMeals),
+															restrictVars(CookMeals, ResMeals),
+															mealIdsToType(ResMeals, Meals, Types),
+															global_cardinality(Types, TypesList).
 
 
 solve(MaxMeals, Meals, Chefs, ChefMeals, MealsList):-	length(Chefs, LenChefs),
@@ -112,105 +201,94 @@ solve(MaxMeals, Meals, Chefs, ChefMeals, MealsList):-	length(Chefs, LenChefs),
 														LenMeals #= TempLenMeals / 2,
 														mealsListToDomains(MealsList, MealsListFinal, MaxMeals),
 
-
 														% Decision Variables
 														length(ResChefs, LenChefs),
-														domain(ResChefs, 1, LenChefs),
+														domain(ResChefs, 0, LenChefs),
 														length(ResMeals, MaxMeals),
-														domain(ResMeals, 1, LenMeals),
+														domain(ResMeals, 0, LenMeals),
 
 
 														% Restrictions
 														all_distinct_except_0(ResChefs),
-														mealIdsToType(ResMeals, Meals, Types),
-														global_cardinality(Types, MealsListFinal),
+														%mealIdsToType(ResMeals, Meals, Types),
+														%global_cardinality(Types, MealsListFinal),
 														%ensureChefMealsOnly(ResChefs, ChefMeals, ResMeals),
-														getChefsMeals(ResChefs, ChefMeals, [], CookMeals),
-														mealIdsToType(CookMeals, Meals, CookTypes),
+														%getChefsMeals(ResChefs, ChefMeals, ResMeals),
+														%fillMeals(ResMeals),
+														%length(CookMeals, LenCookMeals),
+														%LenCookMeals #=< MaxMeals,
+														%mealIdsToType(ResMeals, Meals, CookTypes),
 														%global_cardinality(CookTypes, MealsListFinal),
+
+														newGetChefMeals(ResChefs, ChefMeals, [], CookMeals),
+														%restrictResMeals(ResMeals, CookMeals, Meals, MealsListFinal),
+														%mealIdsToType(CookMeals, Meals, Types),
+														%global_cardinality(Types, MealsListFinal),
+														%list_to_fdset(CookMeals, CookMealsSet),
+														%ensureChefMealsOnly(CookMealsSet, ResMeals),
 
 														% Evaluation
 														sumChefsSalaries(Chefs, ResChefs, SalariesSum),
-														sumMealsProfit(ResMeals, Meals, MealsSum),
+														sumMealsProfit(CookMeals, Meals, MealsSum),
 														Profit #= MealsSum - SalariesSum,
 
 
 														%Labeling
 														append(ResChefs, ResMeals, Final),
 														%labeling([maximize(MealsSum)], ResMeals),
+														%labeling([minimize(SalariesSum), maximize(MealsSum)], ResChefs),
 														%labeling([maximize(MealsSum), minimize(SalariesSum)], Final),
 														labeling([maximize(Profit)], Final),
-														%labeling([minimize(SalariesSum)], ResChefs),
 														%labeling([], ResMeals),
+
+														write(CookMeals), nl,
 														write(ResChefs), nl,
 														write(Profit), nl,
-														write(ResMeals), nl,
 														write(MealsSum), nl,
-														write(SalariesSum), nl
+														write(ResMeals), nl
+														%write(MealsSum), nl,
+														%write(SalariesSum), nl
+														.
+
+
+solve2(MaxMeals, Meals, Chefs, ChefMeals, MealsList):-	length(Chefs, LenChefs),
+														length(Meals, TempLenMeals),
+														LenMeals #= TempLenMeals / 2,
+														mealsListToDomains(MealsList, MealsListFinal, MaxMeals),
+
+														% Decision Variables
+														length(ResChefs, LenChefs),
+														domain(ResChefs, 0, LenChefs),
+														length(ResMeals, MaxMeals),
+														domain(ResMeals, 0, LenMeals),
+
+
+														% Restrictions
+														all_distinct_except_0(ResChefs),
+														%newGetChefMeals(ResChefs, ChefMeals, [], CookMeals),
+														%restrictResMeals(ResMeals, CookMeals, Meals, MealsListFinal),
+
+														% Evaluation
+														sumChefsSalaries(Chefs, ResChefs, SalariesSum),
+														%sumMealsProfit(CookMeals, Meals, MealsSum),
+														%Profit #= MealsSum - SalariesSum,
+
+
+														%Labeling
+														append(ResChefs, ResMeals, Final),
+														labeling([minimize(SalariesSum)], Final),
+
+														%write(CookMeals), nl,
+														write(ResChefs), nl
+														%write(Profit), nl,
+														%write(MealsSum), nl,
+														%write(ResMeals), nl
+														%write(MealsSum), nl,
+														%write(SalariesSum), nl
 														.
 
 
 
-test_solve:- generateSmall(Meals, Chefs, ChefMeals, MealsList), solve(9, Meals, Chefs, ChefMeals, MealsList).
+test_solve:- generateSmall(Meals, Chefs, ChefMeals, MealsList), solve(5, Meals, Chefs, ChefMeals, MealsList).
+test_solve2:- generateSmall(Meals, Chefs, ChefMeals, MealsList), solve2(5, Meals, Chefs, ChefMeals, MealsList).
 
-/*
-generateMealsSmall([[1, 400, 1], [2, 450, 2], [3, 385, 2], [4, 287, 1]]).
-
-generateChefsSmall([[1, 1000, [4, 3]], [2, 1200, [1, 2, 3]]]).
-
-generateMealsListSmall([1-1, 2-1]).
-
-getChef(Id, [CurrentChef|OtherChefs], CurrentChef):- 	nth0(0, CurrentChef, CurrentChefId),
-														Id == CurrentChefId.
-getChef(Id, [_|OtherChefs], Chef):-	getChef(Id, OtherChefs, Chef).
-
-getMeal(Id, [CurrentMeal|OtherMeals], CurrentMeal):-	nth0(0, CurrentMeal, CurrentMealId),
-														Id == CurrentMealId.
-getMeal(Id, [_|OtherMeals], Meal):-	getMeal(Id, OtherMeals, Meal).
-
-getSalaries([ChefId|OtherChefsIds], Chefs):-	getChef(ChefId, Chefs, Chef).
-
-mealsListToDomains([], []).
-mealsListToDomains([Id-Cardinality|OtherMeals], [Id-NewCard|List]):-	NewCard in Cardinality..10, mealsListToDomains(OtherMeals, List).
-*/
-
-
-/*
-sushi(NMaxPratos, MealsList, Chefs, Meals):-	length(Meals, LenMeals),
-												LastIdMeals is LenMeals + 1,
-												length(ResMeals, NMaxPratos),
-												domain(ResMeals, 1, LastIdMeals),
-												%all_distinct(ResMeals),
-												length(Chefs, LenChefs),
-												LastIdChefs is LenChefs + 1,
-												length(ResChefs, LenChefs),
-												domain(ResChefs, 1, LastIdChefs),
-												all_distinct(ResChefs),
-
-
-												mealsListToDomains(MealsList, MealsListDomains),
-												write(MealsListDomains), nl,
-												global_cardinality(ResMeals, MealsListDomains),
-
-
-												labeling([], ResMeals),
-
-
-
-												labeling([], ResChefs),
-												write(ResMeals), nl,
-												write(ResChefs), nl
-												.
-*/
-/*
-sushi(NMaxPratos, MealsList, Chefs, Meals):-	length(Chefs, LenChefs),
-												LastIdChefs is LenChefs + 1,
-												length(ResChefs, LenChefs),
-												domain(ResChefs, 1, LastIdChefs),
-												all_distinct(ResChefs),
-												labeling([], ResChefs),
-												write(ResChefs), nl
-												.
-*/
-
-%test:- generateChefsSmall(Chefs), generateMealsSmall(Meals), generateMealsListSmall(MealsList), sushi(4, MealsList, Chefs, Meals).
