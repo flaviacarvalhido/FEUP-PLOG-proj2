@@ -4,16 +4,16 @@
 
 generateMealsSmall([200, 1, 250, 2, 300, 3, 150, 2, 175, 1]).
 
-generateChefsSmall([4000, 2000, 1000]).
+generateChefsSmall([500, 700, 500]).
 
 generateChefMealsSmall([1, 2, 3, 3, 2, 0, 1, 5, 4]).
 
 generateMealsListSmall([1-1, 2-1, 3-1]).
 
 generateChefMealsSmallAlt([
-						1, 1, 1, 0, 0,
-						0, 1, 1, 0, 0,
-						1, 0, 0, 1, 1
+						1, 0, 0, 0, 0,
+						0, 0, 1, 1, 0,
+						0, 1, 1, 0, 0
 						]).
 
 generateSmall(Meals, Chefs, ChefMeals, MealsList):-	generateMealsSmall(Meals),
@@ -73,20 +73,79 @@ getChefMealsAlt(LenMeals, ChefId, ChefMeals, CurrentChefMeals):-	Idx #= ChefId *
 																	getSubList(Idx, LenMeals, ChefMeals, TempCurrentChefMeals),
 																	reverse(TempCurrentChefMeals, CurrentChefMeals).
 
-getAllChefMeals(_, _, _, 0, AllMeals, AllMeals, ResMeals).
-getAllChefMeals(LenMeals, ChefIds, ChefMeals, N, AllMeals, AllMealsFinal, ResMeals):-	
+multiplyList([], [], _).
+multiplyList([H1|T1], [H2|T2], Val):-	H2 #= H1 * Val,
+										multiplyList(T1, T2, Val).
+
+getAllChefMeals(_, _, _, 0, AllMeals, AllMeals).
+getAllChefMeals(LenMeals, ChefIds, ChefMeals, N, AllMeals, AllMealsFinal):-	
 			N > 0,
 			element(N, ChefIds, Id),
-			getMeals(LenMeals, N, ChefMeals, TempCurrentChefMeals, Res),
+			Id #= 1 #<=> Res,
+			/*Id #= 0 #=> Flag #= 0,
+			Id #= 1 #=> Flag #= 1,*/
+			write('Res: '), write(Res), nl,
+			write('Flag: '), write(Flag), nl,
+			getChefMealsAlt(LenMeals, N, ChefMeals, TempCurrentChefMeals),
+			%getMeals(LenMeals, N, ChefMeals, TempCurrentChefMeals, Res),
+			write('Meals Before: '), write(TempCurrentChefMeals), nl,
+			multiplyList(TempCurrentChefMeals, NewTempCurrentChefMeals, Res),
+			write('Meals: '), write(NewTempCurrentChefMeals), nl,
 			/*Id #= 1 #<=> Res,
-			write(Res), nl,
-			forceZerosNew(TempCurrentChefMeals, ResMeals, Res),*/
-			append(AllMeals, TempCurrentChefMeals, CurrentChefMeals),
+			write(Res), nl,*/
+			%forceZerosNewNew(TempCurrentChefMeals, ResMeals),
+			%forceOr(AllMeals, NewTempCurrentChefMeals, CurrentChefMeals),
+			append(AllMeals, NewTempCurrentChefMeals, CurrentChefMeals),
 			N1 #= N-1,
-			getAllChefMeals(LenMeals, ChefIds, ChefMeals, N1, CurrentChefMeals, AllMealsFinal, ResMeals).
+			getAllChefMeals(LenMeals, ChefIds, ChefMeals, N1, CurrentChefMeals, AllMealsFinal).
 
-getMeals(LenMeals, N, ChefMeals, CurrentChefMeals, 0):-	getChefMealsAlt(LenMeals, N, ChefMeals, CurrentChefMeals).
-getMeals(LenMeals, N, ChefMeals, CurrentChefMeals, 1):-	createZerosList(LenMeals, CurrentChefMeals).
+getMeals(LenMeals, N, ChefMeals, CurrentChefMeals, 1):-	getChefMealsAlt(LenMeals, N, ChefMeals, CurrentChefMeals).
+getMeals(LenMeals, N, ChefMeals, CurrentChefMeals, 0):-	createZerosList(LenMeals, CurrentChefMeals).
+
+forceOrSingleListPos(_, [], _, 0).
+forceOrSingleListPos(List1, [H1|T1], LenMeals, N):-	length(List1, Len),
+													ActualLen #= Len / LenMeals, 
+													actuallyForceOr(List1, 0, H1, ActualLen, N, LenMeals),
+													N1 #= N - 1,
+													forceOrSingleListPos(List1, T1, LenMeals, N1).
+
+actuallyForceOr(_, Res, Res, 0, _, _).
+actuallyForceOr(List1, Res, FinalRes, N, Idx, LenMeals):-	ActualIdx #= LenMeals * (N-1) + Idx,
+															element(ActualIdx, List1, Elem),
+															bool_or([Elem, Res], TempRes),
+															N1 #= N - 1,
+															actuallyForceOr(List1, TempRes, FinalRes, N1, Idx, LenMeals).
+
+forceOrOnBigList(List, ResList, LenMeals):-	forceOrSingleListPos(List, TempResList, LenMeals, LenMeals),
+											reverse(TempResList, ResList).
+
+
+forceOrSingleListPosNew(_, [], _, 0).
+forceOrSingleListPosNew(List1, [H1|T1], LenMeals, N):-	length(List1, Len),
+														ActualLen #= Len / LenMeals, 
+														actuallyForceOrNew(List1, 0, H1, ActualLen, N, LenMeals),
+														N1 #= N - 1,
+														forceOrSingleListPosNew(List1, T1, LenMeals, N1).
+
+actuallyForceOrNew(_, Res, Res, 0, _, _).
+actuallyForceOrNew(List1, Res, FinalRes, N, Idx, LenMeals):-	ActualIdx #= LenMeals * (N-1) + Idx,
+																element(ActualIdx, List1, Elem),
+																myOr(Elem, Res, TempRes),
+																N1 #= N - 1,
+																actuallyForceOrNew(List1, TempRes, FinalRes, N1, Idx, LenMeals).
+
+forceOrOnBigListNew(List, ResList, LenMeals):-	forceOrSingleListPosNew(List, TempResList, LenMeals, LenMeals),
+												reverse(TempResList, ResList).
+
+testActuallyForceOr:-	List = [1, 0, 0, 0, 0, 0, 0, 1, 0],
+						actuallyForceOr(List, 0, Res, 3, 1, 3),
+						write(Res), nl.
+
+testActuallyForceOrNew:-	List = [1,0,0,1,1,0,0,0,0,0,0,0,0,0,0],
+							forceOrOnBigList(List, ResListFinal, 5),
+							write(ResListFinal), nl.
+
+getPossibleMeals(LenMeals, AllMeals):- !.	
 
 createZerosList(0, []).
 createZerosList(N, [0|Tail]):-	N > 0, N1 is N-1, createZerosList(N1, Tail).
@@ -115,18 +174,31 @@ forceZeros([], []).
 forceZeros([H1|T1], [H2|T2]):-	(H1 #= 0 -> H2 #= 0; H2 in 0..1),
 								forceZeros(T1, T2).
 
-forceZerosNew([], [], _).
-forceZerosNew([H1|T1], [H2|T2], 1):-	H1 #= 0 #<=> V,
+forceZerosNew([], []).
+forceZerosNew([H1|T1], [H2|T2]):-	H1 #= 0 #<=> V,
 										Upper #= 1 - V,
 										domain([H2], 0, Upper),
 										forceZerosNew(T1, T2, 1).
-forceZerosNew(_, _, 0).
+
+forceZerosNewNew([], []).
+forceZerosNewNew([H1|T1], [H2|T2]):-	H1 #= 1 #<=> Res,
+										(Res #= 1 -> write('nothing'), nl; H2 #= 0),
+										forceZerosNewNew(T1, T2).
+
+forceZerosNewNewNew([], []).
+forceZerosNewNewNew([H1|T1], [H2|T2]):-	H1 #= 0 #=> H2 #\= 1,
+										forceZerosNewNewNew(T1, T2).
 
 forceByScalar([], []).
 forceByScalar([H1|T1], [H2|T2]):-	Temp #= H1 * H2,
 									write(Temp), nl,
 									Temp #>= 0,
 									forceByScalar(T1, T2).
+
+myOr(Val1, Val2, Res):- Val1 #= 0 #<=> Res1, Val2 #= 0 #<=> Res2, Res #= 1 - (Res1 * Res2), write(Res), nl.
+
+listOr([], [], []).
+listOr([H1|T1], [H2|T2], [H3|T3]):- myOr(H1, H2, H3), listOr(T1, T2, T3).
 
 mealIdsToTypes(_, [], 0, _).
 mealIdsToTypes(ResMeals, [Head|OtherTypes], N, Meals):-	N > 0,
@@ -148,7 +220,7 @@ testMealIdsToTypes:-	ResMeals = [0, 1, 1, 0, 1],
 						write(Types), nl.
 
 %Solução com MaxMeals = 4:	Contratar Chefs 2 e 3 e incluir na ementa os pratos 1, 2, 3 e 5
-test_solve:-	generateSmallAlt(Meals, Chefs, ChefMeals, MealsList), solve(4, Meals, Chefs, ChefMeals, MealsList).
+test_solve:-	generateSmallAlt(Meals, Chefs, ChefMeals, MealsList), solve(5, Meals, Chefs, ChefMeals, MealsList).
 
 solve(MaxMeals, Meals, Chefs, ChefMeals, MealsList):-
 	
@@ -176,9 +248,13 @@ solve(MaxMeals, Meals, Chefs, ChefMeals, MealsList):-
 	sum(ResMeals, #=<, MaxMeals), % No máximo há MaxMeals pratos
 	sum(ResChefs, #>, 0), % Contrata-se pelo menos um chef
 
-	getAllChefMeals(ActualLenMeals, ResChefs, ChefMeals, LenChefs, [], CurrentChefMeals, ResMeals),
+	getAllChefMeals(ActualLenMeals, ResChefs, ChefMeals, LenChefs, [], CurrentChefMeals),
+	forceOrOnBigListNew(CurrentChefMeals, PossibleChefMeals, ActualLenMeals),
 	%getChefMealsAlt(ActualLenMeals, 1, ChefMeals, CurrentChefMeals),
 	write(CurrentChefMeals), nl,
+	write(PossibleChefMeals), nl,
+
+	forceZerosNewNewNew(PossibleChefMeals, ResMeals),
 	mealIdsToTypesFinal(ResMeals, Types, ActualLenMeals, Meals),
 	global_cardinality(Types, MealsListFinal),
 
@@ -195,9 +271,11 @@ solve(MaxMeals, Meals, Chefs, ChefMeals, MealsList):-
 
 	append(ResChefs, ResMeals, Final),
 	labeling([maximize(Profit)], Final),
+	write('MealsList: '), write(MealsList), nl,
 	write('ResChefs: '), write(ResChefs), nl,
 	write('ResMeals: '), write(ResMeals), nl,
 	write('CurrentChefMeals: '), write(CurrentChefMeals), nl,
+	write('PossibleChefMeals: '), write(PossibleChefMeals), nl,
 	write('Types: '), write(Types), nl,
 	write('Salaries: '), write(SalariesSum), nl,
 	write('Meals Profit: '), write(MealsSum), nl,
@@ -274,12 +352,22 @@ testForceZeros:-	length(Vars, 3),
 					C in 0..1,
 					List = [A, B, C],
 
-					forceZeros(List, Vars),
+					ListNew = [1, 1, 1],
 
-					sum(Vars, #=, Sum),
+					Weights = [1000, 2000, 500],
 
-					labeling([maximize(A), maximize(Sum)], Vars),
-					write(Vars), nl.
+					forceZerosNewNewNew(ListNew, Vars),
+
+					sum(Vars, #=, 2),
+					scalar_product(Weights, Vars, #=, Scalar),
+
+					append(List, Vars, Final),
+					labeling([minimize(Scalar)], Final),
+					write(Vars), nl,
+					write(A), nl,
+					write(B), nl,
+					write(C), nl,
+					write(Scalar).
 
 testForceOr:-	length(Vars, 3),
 				domain(Vars, 0, 1),
@@ -315,7 +403,7 @@ testGetAllChefMeals:-	ResChefs = [0, 1, 1],
 						ChefMeals = [
 							1, 1, 1, 0, 0,
 							0, 0, 1, 0, 0,
-							1, 0, 0, 1, 1
+							1, 0, 0, 0, 1
 						],
 						getAllChefMeals(5, ResChefs, ChefMeals, 3, [0, 0, 0, 0, 0], Meals),
 						nl, write(Meals), nl.
