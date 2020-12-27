@@ -29,7 +29,8 @@ getChefMeals(ChefId, ChefMeals, CurrentChefMeals):-	Idx #= ChefId * 3 - 2,
 													getSubList(Idx, 3, ChefMeals, TempCurrentChefMeals),
 													reverse(TempCurrentChefMeals, CurrentChefMeals).
 
-getChefMealsAlt(LenMeals, ChefId, ChefMeals, CurrentChefMeals):-	Idx #= ChefId * 5 - 4,
+getChefMealsAlt(LenMeals, ChefId, ChefMeals, CurrentChefMeals):-	Constant #= LenMeals - 1,
+																	Idx #= ChefId * LenMeals - Constant,
 																	getSubList(Idx, LenMeals, ChefMeals, TempCurrentChefMeals),
 																	reverse(TempCurrentChefMeals, CurrentChefMeals).
 
