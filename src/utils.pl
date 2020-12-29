@@ -1,3 +1,5 @@
+:- use_module(library(between)).
+
 getMealsTypes(_).
 
 sumChefsSalaries(Chefs, ChefIds, SalariesSum):-	scalar_product(Chefs, ChefIds, #=, SalariesSum).
@@ -169,3 +171,26 @@ mealIdsToTypesFinal(ResMeals, Types, N, Meals):-	mealIdsToTypes(ResMeals, TempTy
 													reverse(TempTypes, Types).
 
 getPossibleMeals(LenMeals, AllMeals):- !.	
+
+
+
+%Menu Utils
+
+/*
+ * getInputAndValidate(+Low, +High, -Input)
+ *
+ * Asks the user for input and then verifies if it is in the interval [Low, High]
+ *
+ */
+getInputAndValidate(Low, High, Input):- write('Your choice: '), nl, read(Input), skip_line, integer(Input),
+										between(Low, High, Input).
+getInputAndValidate(Low, High, Input):- write('Incorrect Selection'), nl, getInputAndValidate(Low, High, Input).
+
+
+/*
+ * clearConsole/0
+ *
+ * Clears the Sicstus console.
+ *
+ */
+clearConsole :- write('\33\[2J').

@@ -2,7 +2,7 @@
 :- use_module(library(lists)).
 
 :- include('problem_generator.pl').
-:- include('utils.pl').
+:- include('menus.pl').
 :- include('tests.pl').
 
 
@@ -18,6 +18,8 @@
 	Meals - []
 
 */
+
+start:- mainMenu; true.
 
 %Solução com MaxMeals = 4:	Contratar Chefs 2 e 3 e incluir na ementa os pratos 1, 2, 3 e 5
 test_solve:- generateSmallAlt(Meals, Chefs, ChefMeals, MealsList), solve(5, Meals, Chefs, ChefMeals, MealsList).
