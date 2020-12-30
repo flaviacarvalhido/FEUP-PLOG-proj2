@@ -42,19 +42,20 @@ multiplyList([H1|T1], [H2|T2], Val):-	H2 #= H1 * Val,
 										multiplyList(T1, T2, Val).
 
 getAllChefMeals(_, _, _, 0, AllMeals, AllMeals).
+/*FIXME: are these write necessary?*/
 getAllChefMeals(LenMeals, ChefIds, ChefMeals, N, AllMeals, AllMealsFinal):-	
 			N > 0,
 			element(N, ChefIds, Id),
 			Id #= 1 #<=> Res,
 			/*Id #= 0 #=> Flag #= 0,
 			Id #= 1 #=> Flag #= 1,*/
-			write('Res: '), write(Res), nl,
-			write('Flag: '), write(Flag), nl,
+			% write('Res: '), write(Res), nl,
+			% write('Flag: '), write(Flag), nl,
 			getChefMealsAlt(LenMeals, N, ChefMeals, TempCurrentChefMeals),
 			%getMeals(LenMeals, N, ChefMeals, TempCurrentChefMeals, Res),
-			write('Meals Before: '), write(TempCurrentChefMeals), nl,
+			% write('Meals Before: '), write(TempCurrentChefMeals), nl,
 			multiplyList(TempCurrentChefMeals, NewTempCurrentChefMeals, Res),
-			write('Meals: '), write(NewTempCurrentChefMeals), nl,
+			% write('Meals: '), write(NewTempCurrentChefMeals), nl,
 			/*Id #= 1 #<=> Res,
 			write(Res), nl,*/
 			%forceZerosNewNew(TempCurrentChefMeals, ResMeals),
@@ -147,11 +148,11 @@ forceZerosNewNewNew([H1|T1], [H2|T2]):-	H1 #= 0 #=> H2 #\= 1,
 
 forceByScalar([], []).
 forceByScalar([H1|T1], [H2|T2]):-	Temp #= H1 * H2,
-									write(Temp), nl,
+									% write(Temp), nl,
 									Temp #>= 0,
 									forceByScalar(T1, T2).
 
-myOr(Val1, Val2, Res):- Val1 #= 0 #<=> Res1, Val2 #= 0 #<=> Res2, Res #= 1 - (Res1 * Res2), write(Res), nl.
+myOr(Val1, Val2, Res):- Val1 #= 0 #<=> Res1, Val2 #= 0 #<=> Res2, Res #= 1 - (Res1 * Res2), /*write(Res), nl*/.
 
 listOr([], [], []).
 listOr([H1|T1], [H2|T2], [H3|T3]):- myOr(H1, H2, H3), listOr(T1, T2, T3).
@@ -160,7 +161,7 @@ mealIdsToTypes(_, [], 0, _).
 mealIdsToTypes(ResMeals, [Head|OtherTypes], N, Meals):-	N > 0,
 														Idx #= N * 2,
 														element(N, ResMeals, Id),
-														write(Id), nl,
+														% write(Id), nl,
 														element(Idx, Meals, Type),
 														Id #= 1 #<=> Res,
 														Head #= Type * Res,

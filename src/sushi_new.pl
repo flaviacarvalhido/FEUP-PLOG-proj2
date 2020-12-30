@@ -34,13 +34,22 @@ solve(MaxMeals, Meals, Chefs, ChefMeals, MealsList):-
 	ActualLenMeals #= LenMeals / 2,
 	mealsListToDomainsFinal(MealsList, MaxMeals, MealsListFinal),
 
+	nl,	
+	/*TODO: make this a separate function, display the lists better*/
+	write('---------------------------------------------------Problem input----------------------------------------------------'), nl,nl,
+	write('Maximum number of dishes to have: '), write(MaxMeals), nl, nl,
+	write('Minimum required number of dishes per type: '), write(MealsList), nl, nl,
+	write('List of meals available (profit-type): '), write(Meals), nl,nl,
+	write('Total meals available: '), write(ActualLenMeals), nl,nl,
+	write('List of chefs available (salary): '), write(Chefs), nl, nl,
+	write('List of meals that chefs can cook (length=total of meals * number of chefs, 0=doesn\'t cook, 1=cooks): '), nl, write(ChefMeals), nl, nl,
+	write('Types of dishes and their domains: '), write(MealsListFinal), nl,
 	nl,
-	write(ActualLenMeals), nl,
-	write(Meals), nl,
-	write(Chefs), nl,
-	write(ChefMeals), nl,
-	write(MealsListFinal), nl,
-	nl,
+	write('--------------------------------------------------------------------------------------------------------------------'), nl,nl,
+	
+
+	write('----------------------------------------------------Processing------------------------------------------------------'), nl,nl,
+
 
 	% Decision Variables
 	length(ResChefs, LenChefs),
@@ -56,8 +65,9 @@ solve(MaxMeals, Meals, Chefs, ChefMeals, MealsList):-
 	getAllChefMeals(ActualLenMeals, ResChefs, ChefMeals, LenChefs, [], CurrentChefMeals),
 	forceOrOnBigListNew(CurrentChefMeals, PossibleChefMeals, ActualLenMeals),
 	%getChefMealsAlt(ActualLenMeals, 1, ChefMeals, CurrentChefMeals),
-	write(CurrentChefMeals), nl,
-	write(PossibleChefMeals), nl,
+	/*FIXME: estes dois prints não são para ficar no fim right?*/
+	% write(CurrentChefMeals), nl,
+	% write(PossibleChefMeals), nl,
 
 	forceZerosNewNewNew(PossibleChefMeals, ResMeals),
 	mealIdsToTypesFinal(ResMeals, Types, ActualLenMeals, Meals),
@@ -75,15 +85,18 @@ solve(MaxMeals, Meals, Chefs, ChefMeals, MealsList):-
 
 	append(ResChefs, ResMeals, Final),
 	labeling([maximize(Profit)], Final),
-	write('MealsList: '), write(MealsList), nl,
-	write('ResChefs: '), write(ResChefs), nl,
-	write('ResMeals: '), write(ResMeals), nl,
-	write('CurrentChefMeals: '), write(CurrentChefMeals), nl,
-	write('PossibleChefMeals: '), write(PossibleChefMeals), nl,
-	write('Types: '), write(Types), nl,
-	write('Salaries: '), write(SalariesSum), nl,
-	write('Meals Profit: '), write(MealsSum), nl,
-	write('Total Profit: '), write(Profit), nl
+
+	write('-------------------------------------------------Problem solution---------------------------------------------------'), nl,nl,
+	% write('MealsList: '), write(MealsList), nl,
+	write('Chefs to be hired (0-not hired, 1-hired): '), write(ResChefs), nl,nl,
+	write('Meals to be included in the menu (0-don\'t include, 1-include): '), write(ResMeals), nl,nl,
+	% write('CurrentChefMeals: '), write(CurrentChefMeals), nl,
+	% write('PossibleChefMeals: '), write(PossibleChefMeals), nl,
+	write('Food types available: '), write(Types), nl,nl,
+	write('Total salary ammount to pay: '), write(SalariesSum), nl, nl,
+	write('Total montly meal profit: '), write(MealsSum), nl, nl,
+	write('Overall profit: '), write(Profit), nl, nl,
+	write('--------------------------------------------------------------------------------------------------------------------')
 	.
 
 test:-	A in 0..1,
