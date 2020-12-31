@@ -167,7 +167,7 @@ forceZerosNewNewNew([H1|T1], [H2|T2]):-	H1 #= 0 #=> H2 #\= 1,
 
 forceByScalar([], []).
 forceByScalar([H1|T1], [H2|T2]):-	Temp #= H1 * H2,
-									write(Temp), nl,
+									% write(Temp), nl,
 									Temp #>= 0,
 									forceByScalar(T1, T2).
 
@@ -190,3 +190,26 @@ mealIdsToTypesFinal(ResMeals, Types, N, Meals):-	mealIdsToTypes(ResMeals, TempTy
 													reverse(TempTypes, Types).
 
 getPossibleMeals(LenMeals, AllMeals):- !.	
+
+
+
+%Menu Utils
+
+/*
+ * getInputAndValidate(+Low, +High, -Input)
+ *
+ * Asks the user for input and then verifies if it is in the interval [Low, High]
+ *
+ */
+getInputAndValidate(Low, High, Input):- write('Your choice: '), nl, read(Input), skip_line, integer(Input),
+										between(Low, High, Input).
+getInputAndValidate(Low, High, Input):- write('Incorrect Selection'), nl, getInputAndValidate(Low, High, Input).
+
+
+/*
+ * clearConsole/0
+ *
+ * Clears the Sicstus console.
+ *
+ */
+clearConsole :- write('\33\[2J').
