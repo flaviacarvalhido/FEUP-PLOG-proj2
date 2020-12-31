@@ -1,15 +1,48 @@
-getMealsTypes(_).
+
+countOccurrences(_, [], 0).
+countOccurrences(TargetType, [Type|OtherTypes], Count):-	Type #= TargetType #<=> Res,
+															Count #= CountNew + Res,
+															countOccurrences(TargetType, OtherTypes, CountNew).
+
+myCardinality([], _).
+myCardinality([Type-Cardinality|OtherCardinalities], Types):-	countOccurrences(Type, Types, Count),
+																Count #>= Cardinality,
+																myCardinality(OtherCardinalities, Types).
 
 sumChefsSalaries(Chefs, ChefIds, SalariesSum):-	scalar_product(Chefs, ChefIds, #=, SalariesSum).
 
 mealsListToDomains([], [], _).
-% porquê isto da cardinalidade dos pratos?  o que é que estas duas funções estão a fazer? 
 mealsListToDomains([Id-Cardinality|OtherMeals], [Id-NewCard|List], Max):-	NewCard in Cardinality..Max,
 																			mealsListToDomains(OtherMeals, List, Max).
 
 mealsListToDomainsFinal(MealsList, Max, MealsListFinal):-	mealsListToDomains(MealsList, TempMealsList, Max),
 															A in 0..Max,
 															append([0-A], TempMealsList, MealsListFinal).
+
+calculateUpperBound([], _, 0).
+calculateUpperBound([Id-Cardinality|OtherIdsCardinalities], TargetId, ToSubtract):-	Id #\= TargetId #<=> Res,
+																					calculateUpperBound(OtherIdsCardinalities, TargetId, ToSubtractNew),
+																					ToSubtract #= ToSubtractNew + Cardinality * Res.
+
+countTypeOccurences([], _, 0).
+countTypeOccurences([Profit, Type|OtherMeals], TargetType, Occurences):-	Type #= TargetType #<=> Res,
+																			countTypeOccurences(OtherMeals, TargetType, OccurencesNew),
+																			Occurences #= OccurencesNew + Res.
+
+mealsListToDomainsFaster([], [], _).
+mealsListToDomainsFaster([Id-Cardinality|OtherMeals], [Id-NewCard|List], Meals):-	countTypeOccurences(Meals, Id, NumberOfOccurences),
+																					write('Occurences: '), write(NumberOfOccurences), nl,
+																					write('Type: '), write(Id), nl,
+																					NewCard in Cardinality..NumberOfOccurences,
+																					write('NewCard: '), write(Cardinality), write('..'), write(NumberOfOccurences), nl,
+																					mealsListToDomainsFaster(OtherMeals, List, Meals).
+
+mealsListToDomainsFasterFinal(MealsList, Max, Meals, MealsListFinal):-	mealsListToDomainsFaster(MealsList, TempMealsList, Meals),
+																		calculateUpperBound(MealsList, 0, ToSubtract),
+																		UpperBound #= Max - ToSubtract,
+																		A in 0..UpperBound,
+																		write('A: '), write(UpperBound), nl,
+																		append([0-A], TempMealsList, MealsListFinal).
 
 % Adds a zero after each element of a list (used for performing scalar_product with ResMeals)
 buildScalarList([], []).
@@ -44,19 +77,8 @@ getAllChefMeals(LenMeals, ChefIds, ChefMeals, N, AllMeals, AllMealsFinal):-
 			N > 0,
 			element(N, ChefIds, Id),
 			Id #= 1 #<=> Res,
-			/*Id #= 0 #=> Flag #= 0,
-			Id #= 1 #=> Flag #= 1,*/
-			write('Res: '), write(Res), nl,
-			write('Flag: '), write(Flag), nl,
 			getChefMealsAlt(LenMeals, N, ChefMeals, TempCurrentChefMeals),
-			%getMeals(LenMeals, N, ChefMeals, TempCurrentChefMeals, Res),
-			write('Meals Before: '), write(TempCurrentChefMeals), nl,
 			multiplyList(TempCurrentChefMeals, NewTempCurrentChefMeals, Res),
-			write('Meals: '), write(NewTempCurrentChefMeals), nl,
-			/*Id #= 1 #<=> Res,
-			write(Res), nl,*/
-			%forceZerosNewNew(TempCurrentChefMeals, ResMeals),
-			%forceOr(AllMeals, NewTempCurrentChefMeals, CurrentChefMeals),
 			append(AllMeals, NewTempCurrentChefMeals, CurrentChefMeals),
 			N1 #= N-1,
 			getAllChefMeals(LenMeals, ChefIds, ChefMeals, N1, CurrentChefMeals, AllMealsFinal).
@@ -149,7 +171,7 @@ forceByScalar([H1|T1], [H2|T2]):-	Temp #= H1 * H2,
 									Temp #>= 0,
 									forceByScalar(T1, T2).
 
-myOr(Val1, Val2, Res):- Val1 #= 0 #<=> Res1, Val2 #= 0 #<=> Res2, Res #= 1 - (Res1 * Res2), write(Res), nl.
+myOr(Val1, Val2, Res):- Val1 #= 0 #<=> Res1, Val2 #= 0 #<=> Res2, Res #= 1 - (Res1 * Res2).
 
 listOr([], [], []).
 listOr([H1|T1], [H2|T2], [H3|T3]):- myOr(H1, H2, H3), listOr(T1, T2, T3).
@@ -158,7 +180,6 @@ mealIdsToTypes(_, [], 0, _).
 mealIdsToTypes(ResMeals, [Head|OtherTypes], N, Meals):-	N > 0,
 														Idx #= N * 2,
 														element(N, ResMeals, Id),
-														write(Id), nl,
 														element(Idx, Meals, Type),
 														Id #= 1 #<=> Res,
 														Head #= Type * Res,
