@@ -80,9 +80,6 @@ displayProblem:-
 
 
 
-While fulfilling all these restrictions, the objective of this problem is to maximise the monthly earnings of this restaurant owner, by choosing the best chefs and dishes to have in order to do so. 
-
-
 /*
  * handleChoice(+Choice)
  *

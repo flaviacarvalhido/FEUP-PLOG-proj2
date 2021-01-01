@@ -1,9 +1,8 @@
 :- use_module(library(clpfd)).
-:- use_module(library(lists)).
 
 :- include('problem_generator.pl').
-:- include('menus.pl').
 :- include('tests.pl').
+:- include('display.pl').
 
 
 /*
@@ -34,29 +33,16 @@ solve(MaxMeals, Meals, Chefs, ChefMeals, MealsList):-
 	ActualLenMeals #= LenMeals / 2,
 	mealsListToDomainsFinal(MealsList, MaxMeals, MealsListFinal),
 
-	nl,	
-	/*TODO: make this a separate function, display the lists better*/
-	write('---------------------------------------------------Problem input----------------------------------------------------'), nl,nl,
-	write('Maximum number of dishes to have: '), write(MaxMeals), nl, nl,
-	write('Minimum required number of dishes per type: '), write(MealsList), nl, nl,
-	write('List of meals available (profit-type): '), write(Meals), nl,nl,
-	write('Total meals available: '), write(ActualLenMeals), nl,nl,
-	write('List of chefs available (salary): '), write(Chefs), nl, nl,
-	write('List of meals that chefs can cook (length=total of meals * number of chefs, 0=doesn\'t cook, 1=cooks): '), nl, write(ChefMeals), nl, nl,
-	write('Types of dishes and their domains: '), write(MealsListFinal), nl,
-	nl,
-	write('--------------------------------------------------------------------------------------------------------------------'), nl,nl,
+	clearConsole,
+	displayInput(MaxMeals, MealsList, Meals, ActualLenMeals, Chefs, LenChefs, ChefMeals),
 	
-
-	write('----------------------------------------------------Processing------------------------------------------------------'), nl,nl,
-
+	write('----------------------------------------------------Processing------------------------------------------------------'), nl,
 
 	% Decision Variables
 	length(ResChefs, LenChefs),
 	length(ResMeals, ActualLenMeals),
 	domain(ResChefs, 0, 1),
 	domain(ResMeals, 0, 1),
-
 
 	% Restrictions
 	sum(ResMeals, #=<, MaxMeals), % No máximo há MaxMeals pratos
@@ -65,7 +51,6 @@ solve(MaxMeals, Meals, Chefs, ChefMeals, MealsList):-
 	getAllChefMeals(ActualLenMeals, ResChefs, ChefMeals, LenChefs, [], CurrentChefMeals),
 	forceOrOnBigListNew(CurrentChefMeals, PossibleChefMeals, ActualLenMeals),
 	%getChefMealsAlt(ActualLenMeals, 1, ChefMeals, CurrentChefMeals),
-	/*FIXME: estes dois prints não são para ficar no fim right?*/
 	% write(CurrentChefMeals), nl,
 	% write(PossibleChefMeals), nl,
 
@@ -73,31 +58,16 @@ solve(MaxMeals, Meals, Chefs, ChefMeals, MealsList):-
 	mealIdsToTypesFinal(ResMeals, Types, ActualLenMeals, Meals),
 	global_cardinality(Types, MealsListFinal),
 
-
-
 	% Evaluation
 	sumChefsSalaries(Chefs, ResChefs, SalariesSum),
 	sumMealsProfit(Meals, ResMeals, MealsSum),
 	Profit #= MealsSum - SalariesSum,
 
-
 	% Labeling
-
 	append(ResChefs, ResMeals, Final),
 	labeling([maximize(Profit)], Final),
 
-	write('-------------------------------------------------Problem solution---------------------------------------------------'), nl,nl,
-	% write('MealsList: '), write(MealsList), nl,
-	write('Chefs to be hired (0-not hired, 1-hired): '), write(ResChefs), nl,nl,
-	write('Meals to be included in the menu (0-don\'t include, 1-include): '), write(ResMeals), nl,nl,
-	% write('CurrentChefMeals: '), write(CurrentChefMeals), nl,
-	% write('PossibleChefMeals: '), write(PossibleChefMeals), nl,
-	write('Food types available: '), write(Types), nl,nl,
-	write('Total salary ammount to pay: '), write(SalariesSum), nl, nl,
-	write('Total montly meal profit: '), write(MealsSum), nl, nl,
-	write('Overall profit: '), write(Profit), nl, nl,
-	write('--------------------------------------------------------------------------------------------------------------------')
-	.
+	displaySolution(ResChefs, LenChefs, ResMeals, Types, SalariesSum, MealsSum, Profit).
 
 test:-	A in 0..1,
 		B in 2..2,

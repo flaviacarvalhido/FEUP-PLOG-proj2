@@ -66,7 +66,7 @@ getAllChefMeals(LenMeals, ChefIds, ChefMeals, N, AllMeals, AllMealsFinal):-
 
 
 getMeals(LenMeals, N, ChefMeals, CurrentChefMeals, 1):-	getChefMealsAlt(LenMeals, N, ChefMeals, CurrentChefMeals).
-getMeals(LenMeals, N, ChefMeals, CurrentChefMeals, 0):-	createZerosList(LenMeals, CurrentChefMeals).
+getMeals(LenMeals, _, _, CurrentChefMeals, 0):-	createZerosList(LenMeals, CurrentChefMeals).
 
 forceOrSingleListPos(_, [], _, 0).
 forceOrSingleListPos(List1, [H1|T1], LenMeals, N):-	length(List1, Len),
@@ -152,7 +152,7 @@ forceByScalar([H1|T1], [H2|T2]):-	Temp #= H1 * H2,
 									Temp #>= 0,
 									forceByScalar(T1, T2).
 
-myOr(Val1, Val2, Res):- Val1 #= 0 #<=> Res1, Val2 #= 0 #<=> Res2, Res #= 1 - (Res1 * Res2), /*write(Res), nl*/.
+myOr(Val1, Val2, Res):- Val1 #= 0 #<=> Res1, Val2 #= 0 #<=> Res2, Res #= 1 - (Res1 * Res2)/*, write(Res), nl*/.
 
 listOr([], [], []).
 listOr([H1|T1], [H2|T2], [H3|T3]):- myOr(H1, H2, H3), listOr(T1, T2, T3).
@@ -171,7 +171,7 @@ mealIdsToTypes(ResMeals, [Head|OtherTypes], N, Meals):-	N > 0,
 mealIdsToTypesFinal(ResMeals, Types, N, Meals):-	mealIdsToTypes(ResMeals, TempTypes, N, Meals),
 													reverse(TempTypes, Types).
 
-getPossibleMeals(LenMeals, AllMeals):- !.	
+getPossibleMeals(_, _):- !.	
 
 
 
