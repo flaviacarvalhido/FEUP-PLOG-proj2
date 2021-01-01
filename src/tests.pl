@@ -1,117 +1,46 @@
-testMealIdsToTypes:-	ResMeals = [0, 1, 1, 0, 1],
-						Meals = [200, 1, 250, 2, 300, 3, 150, 2, 175, 1],
-						mealIdsToTypesFinal(ResMeals, Types, 5, Meals),
-						write(Types), nl.
 
-test_meals_sum:-	Meals = [200, 1, 250, 2, 300, 3, 150, 2, 175, 1],
-					ResMeals = [_, _, _, _, _],
-					domain(ResMeals, 0, 1),
-					sumMealsProfit(Meals, ResMeals, Sum),
-					labeling([maximize(Sum)], ResMeals),
-					write(ResMeals), nl,
-					write(Sum), nl.
+% Predicates to run various instances of the problem
 
-test_salary_sum:-	Chefs = [4000, 2000, 1000],
-					ResChefs = [_, _, _],
-					domain(ResChefs, 0, 1),
-					sumChefsSalaries(Chefs, ResChefs, Sum),
-					sum(ResChefs, #>, 0),
-					labeling([minimize(Sum)], ResChefs),
-					write(ResChefs), nl.
+test_solve:- generateSmallAlt(Meals, Chefs, ChefMeals, MealsList), solve(5, Meals, Chefs, ChefMeals, MealsList).
 
-new_test:-	Vars = [_, 1, _],
-			domain(Vars, 0, 1),
-			Vars2 = [_, _, _],
-			domain(Vars2, 0, 1),
-			forceXor(Vars, Vars2),
-			append(Vars, Vars2, Final),
-			labeling([], Final),
-			write(Vars), nl,
-			write(Vars2), nl.
+test_solve_medium:-	generateMediumAlt(Meals, Chefs, ChefMeals, MealsList), solve(7, Meals, Chefs, ChefMeals, MealsList).
 
-testForceByScalar:-	length(Vars, 3),
-					domain(Vars, 0, 1),
-					A in 0..1,
-					B in 0..1,
-					C in 0..1,
-					List = [A, B, C],
+test_solve_medium_big:-	generateMediumBig(Meals, Chefs, ChefMeals, MealsList), solve(8, Meals, Chefs, ChefMeals, MealsList).
 
-					forceByScalar(List, Vars),
+test_solve_very_big:-	generateVeryBig(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
 
-					sum(Vars, #=, Sum),
+test_solve_big1:-	generateBig1(Meals, Chefs, ChefMeals, MealsList), solve(15, Meals, Chefs, ChefMeals, MealsList).
 
-					labeling([maximize(Sum)], Vars),
-					write(Vars), nl.
+test_solve_big2:-	generateBig2(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
 
+test_solve_big3:-	generateBig3(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
 
-testForceZeros:-	length(Vars, 3),
-					domain(Vars, 0, 1),
-					A in 0..1,
-					B in 0..1,
-					C in 0..1,
-					List = [A, B, C],
+test_solve_big4:-	generateBig4(Meals, Chefs, ChefMeals, MealsList), solve(12, Meals, Chefs, ChefMeals, MealsList).
 
-					ListNew = [1, 1, 1],
+test_fixedChefs_10:-	fixedChefs10(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
 
-					Weights = [1000, 2000, 500],
+test_fixedChefs_15:-	fixedChefs15(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
 
-					forceZerosNewNewNew(ListNew, Vars),
+test_fixedChefs_20:-	fixedChefs20(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
 
-					sum(Vars, #=, 2),
-					scalar_product(Weights, Vars, #=, Scalar),
+test_fixedChefs_30:-	fixedChefs30(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
 
-					append(List, Vars, Final),
-					labeling([minimize(Scalar)], Final),
-					write(Vars), nl,
-					write(A), nl,
-					write(B), nl,
-					write(C), nl,
-					write(Scalar).
+test_fixedChefs_25:-	fixedChefs25(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
 
-testForceOr:-	length(Vars, 3),
-				domain(Vars, 0, 1),
-				List = [1, 0, 0],
+test_fixedChefs_40:-	fixedChefs40(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
 
-				forceOr(Vars, List),
+test_fixedChefs_45:-	fixedChefs45(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
 
-				sum(Vars, #=, Sum),
+test_fixedChefs_50:-	fixedChefs50(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
 
-				labeling([maximize(Sum)], Vars),
-				write(Vars), nl.
+test_fixedMeals_5:-	fixedMeals5(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
 
-testForceAnd:-	length(Vars, 3),
-				domain(Vars, 0, 1),
-				List = [1, 0, 0],
+test_fixedMeals_10:-	fixedMeals10(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
 
-				forceAnd(Vars, List),
+test_fixedMeals_15:-	fixedMeals15(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
 
-				sum(Vars, #=, Sum),
+test_fixedMeals_20:-	fixedMeals20(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
 
-				labeling([maximize(Sum)], Vars),
-				write(Vars), nl.
+test_fixedMeals_25:-	fixedMeals25(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
 
-testGetMeals:-	ChefMeals = [
-					1, 1, 1, 0, 0,
-					0, 1, 1, 0, 0,
-					1, 0, 0, 1, 1
-				],
-				getMeals(5, 1, ChefMeals, Meals, 1),
-				write(Meals), nl.
-
-testGetAllChefMeals:-	ResChefs = [0, 1, 1],
-						ChefMeals = [
-							1, 1, 1, 0, 0,
-							0, 0, 1, 0, 0,
-							1, 0, 0, 0, 1
-						],
-						getAllChefMeals(5, ResChefs, ChefMeals, 3, [0, 0, 0, 0, 0], Meals),
-						nl, write(Meals), nl.
-
-testActuallyForceOr:-	List = [1, 0, 0, 0, 0, 0, 0, 1, 0],
-						actuallyForceOr(List, 0, Res, 3, 1, 3),
-						write(Res), nl.
-
-testActuallyForceOrNew:-	List = [1,0,0,1,1,0,0,0,0,0,0,0,0,0,0],
-							forceOrOnBigList(List, ResListFinal, 5),
-							write(ResListFinal), nl.
-
+test_fixedMeals_30:-	fixedMeals30(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).

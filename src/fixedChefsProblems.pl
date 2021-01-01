@@ -1,16 +1,5 @@
 
-/*
-
-
-	1 - 0.0s
-	2 - 2.87s
-	3 - 
-	
-
-
-
-
-*/
+% Problems with a fixed number of chefs
 
 fixedChefsChefs10([8552, 1727, 2281, 6728, 2430, 9858, 9689, 2913, 5421, 5911]).
 

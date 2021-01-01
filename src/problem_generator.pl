@@ -1,3 +1,6 @@
+
+% Small Problem
+
 generateMealsSmall([200, 1, 250, 2, 300, 3, 150, 2, 175, 1]).
 
 generateChefsSmall([500, 700, 500]).
@@ -23,7 +26,8 @@ generateSmallAlt(Meals, Chefs, ChefMeals, MealsList):-	generateMealsSmall(Meals)
 														generateMealsListSmall(MealsList).
 
 
-%medium size problem
+% Medium Problem
+
 generateMealsMedium([200, 1,
 					 250, 2, 
 					 300, 3, 
@@ -36,15 +40,6 @@ generateMealsMedium([200, 1,
 					 300, 2]).
 
 generateChefsMedium([4000,2000,3000,5000,2000,600,2500]).
-
-/*
-	Chefs - 3 e 5 (3000 + 2000 = 5000)
-	Meals Profit - 290 + 200 + 250 + 178 + 300 + 300 + 200 = 1718
-	Pratos - [1, 1, 1, 0, 1, 1, 1, 1, 1, 0]
-	Types -  [1, 2, 3, 0, 1, 4, 5, 2, 1, 0]
-
-
-*/
 
 generateChefMealsMediumAlt([1,1,0,1,1,0,0,0,1,0,
 							1,0,0,0,0,1,0,0,0,1,
@@ -61,6 +56,8 @@ generateMediumAlt(Meals, Chefs, ChefMeals, MealsList):-	generateMealsMedium(Meal
 														generateChefMealsMediumAlt(ChefMeals),
 														generateMealsListMedium(MealsList).
 
+
+% Medium Big Problem
 
 generateChefsMediumBig([9227, 8074, 7890, 7448, 7022]).
 
@@ -89,6 +86,7 @@ generateMediumBig(Meals, Chefs, ChefMeals, MealsList):-	generateChefsMediumBig(C
 														generateMealsListMediumBig(MealsList).
 
 
+% Very Big Problem
 
 generateChefsVeryBig([3971, 6538, 2028, 4006, 5952, 2069, 6977, 4133, 3368, 1414]).
 
@@ -149,6 +147,8 @@ generateVeryBig(Meals, Chefs, ChefMeals, MealsList):-	generateChefsVeryBig(Chefs
 														generateMealsVeryBig(Meals),
 														generateChefMealsVeryBig(ChefMeals),
 														generateMealsListVeryBig(MealsList).
+
+% Big Problems
 
 generateChefsBig1([6320, 7035, 5449, 7769, 5469, 8712, 9355, 9852, 8172, 9003, 9918, 9450, 7419, 4272, 5714, 7953, 7388, 1147, 3478, 7933]).
 

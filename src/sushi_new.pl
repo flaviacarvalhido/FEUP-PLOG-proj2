@@ -7,61 +7,39 @@
 :- include('fixedMealsProblems.pl').
 
 
-reset_timer :- statistics(walltime,_).	
+/*
+ * resetTimer/0
+ *
+ * Resets the timer for statistics purposes
+ *
+ */
+reset_timer :- statistics(walltime,_).
+
+/*
+ * printTime/0
+ *
+ * Displays the time passed since the timer was reset
+ *
+ */
 print_time :-
 	statistics(walltime,[_,T]),
 	TS is ((T//10)*10)/1000,
 	nl, write('Time: '), write(TS), write('s'), nl, nl.
 
+/*
+ * start/0
+ *
+ * Entry point for the solver
+ *
+ */
 start:- mainMenu; true.
 
-%Solução com MaxMeals = 4:	Contratar Chefs 2 e 3 e incluir na ementa os pratos 1, 2, 3 e 5
-test_solve:- generateSmallAlt(Meals, Chefs, ChefMeals, MealsList), solve(5, Meals, Chefs, ChefMeals, MealsList).
-
-test_solve_medium:-	generateMediumAlt(Meals, Chefs, ChefMeals, MealsList), solve(7, Meals, Chefs, ChefMeals, MealsList).
-
-test_solve_medium_big:-	generateMediumBig(Meals, Chefs, ChefMeals, MealsList), solve(8, Meals, Chefs, ChefMeals, MealsList).
-
-test_solve_very_big:-	generateVeryBig(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
-
-test_solve_big1:-	generateBig1(Meals, Chefs, ChefMeals, MealsList), solve(15, Meals, Chefs, ChefMeals, MealsList).
-
-test_solve_big2:-	generateBig2(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
-
-test_solve_big3:-	generateBig3(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
-
-test_solve_big4:-	generateBig4(Meals, Chefs, ChefMeals, MealsList), solve(12, Meals, Chefs, ChefMeals, MealsList).
-
-test_fixedChefs_10:-	fixedChefs10(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
-
-test_fixedChefs_15:-	fixedChefs15(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
-
-test_fixedChefs_20:-	fixedChefs20(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
-
-test_fixedChefs_30:-	fixedChefs30(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
-
-test_fixedChefs_25:-	fixedChefs25(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
-
-test_fixedChefs_40:-	fixedChefs40(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
-
-test_fixedChefs_45:-	fixedChefs45(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
-
-test_fixedChefs_50:-	fixedChefs50(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
-
-test_fixedMeals_5:-	fixedMeals5(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
-
-test_fixedMeals_10:-	fixedMeals10(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
-
-test_fixedMeals_15:-	fixedMeals15(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
-
-test_fixedMeals_20:-	fixedMeals20(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
-
-test_fixedMeals_25:-	fixedMeals25(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
-
-test_fixedMeals_30:-	fixedMeals30(Meals, Chefs, ChefMeals, MealsList), solve(20, Meals, Chefs, ChefMeals, MealsList).
-
-
-
+/*
+ * solve(+MaxMeals, +Meals, +Chefs, +ChefMeals, +MealsList)
+ *
+ * Solves the problem and displays the solution
+ *
+ */
 solve(MaxMeals, Meals, Chefs, ChefMeals, MealsList):-
 
 	reset_timer,
@@ -87,19 +65,19 @@ solve(MaxMeals, Meals, Chefs, ChefMeals, MealsList):-
 	sum(ResMeals, #=<, MaxMeals), % No máximo há MaxMeals pratos
 	sum(ResChefs, #>, 0), 		  % Contrata-se pelo menos um chef
 	
-	getAllChefMeals(ActualLenMeals, ResChefs, ChefMeals, LenChefs, [], CurrentChefMeals),
-	forceOrOnBigListNew(CurrentChefMeals, PossibleChefMeals, ActualLenMeals),
+	getAllChefMeals(ActualLenMeals, ResChefs, ChefMeals, LenChefs, [], CurrentChefMeals), % Get the meals of the current selected chefs
+	forceOrOnBigList(CurrentChefMeals, PossibleChefMeals, ActualLenMeals), % Get the list with all the possible menu meals based on the current selected chefs
 
-	forceZerosNewNewNew(PossibleChefMeals, ResMeals),
-	mealIdsToTypesFinal(ResMeals, Types, ActualLenMeals, Meals),
-	global_cardinality(Types, MealsListFinal),
+	forceZeros(PossibleChefMeals, ResMeals), % Force the ResMeals list to only have meals that are also on the PossibleChefsMeals list
+	mealIdsToTypesFinal(ResMeals, Types, ActualLenMeals, Meals), % Get a list with the types of the selected meals
+	global_cardinality(Types, MealsListFinal), % Force the ResMeals list to have at least Xi meals of type i
 	%myCardinality(MealsList, Types),
 
 
 	% Evaluation
-	sumChefsSalaries(Chefs, ResChefs, SalariesSum),
-	sumMealsProfit(Meals, ResMeals, MealsSum),
-	Profit #= MealsSum - SalariesSum,
+	sumChefsSalaries(Chefs, ResChefs, SalariesSum), % Get the total salaries
+	sumMealsProfit(Meals, ResMeals, MealsSum), % Get the total meals expected profit
+	Profit #= MealsSum - SalariesSum, % Get the total profit
 
 	% Labeling
 	append(ResChefs, ResMeals, Final),
@@ -116,26 +94,4 @@ solve(MaxMeals, Meals, Chefs, ChefMeals, MealsList):-
 	write('Total Profit: '), write(Profit), nl
 	*/.
 
-test:-	A in 0..1,
-		B in 2..2,
-		Meals = [200, 1, 250, 2, 300, 3, 150, 2, 175, 1],
-		ChefMeals = [
-					1, 1, 1, 0, 0,
-					0, 1, 1, 0, 0,
-					1, 0, 0, 1, 1
-					],
-		getAllChefMeals(5, [A, B], ChefMeals, 2, [0, 0, 0, 0, 0], CurrentChefMeals),
-		length(ResMeals, 5),
-		domain(ResMeals, 0, 1),
-
-		forceZerosNew(CurrentChefMeals, ResMeals),
-
-		sum(ResMeals, #=<, 4),
-		sumMealsProfit(Meals, ResMeals, Sum),
-
-		labeling([maximize(A), maximize(B), maximize(Sum)], [A, B|ResMeals]),
-		write(A), nl,
-		write(B), nl,
-		write(ResMeals), nl,
-		write(CurrentChefMeals), nl.
 

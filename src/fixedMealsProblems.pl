@@ -1,4 +1,6 @@
 
+% Problems with a fixed number of meals
+
 fixedMealsChefs5([6870, 5973, 958, 2550, 2306]).
 
 fixedMealsMeals5(	[430, 4, 
