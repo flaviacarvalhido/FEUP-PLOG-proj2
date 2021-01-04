@@ -231,7 +231,7 @@ myOr(Val1, Val2, Res):- Val1 #= 0 #<=> Res1, Val2 #= 0 #<=> Res2, Res #= 1 - (Re
 /*
  * mealIdsToTypes(+ResMeals, -Types, +N, +Meals)
  *
- * Gets a reversed list with the types of the selected meals, represented in ResMeals
+ * Gets a reversed flist with the types of the selected meals, represented in ResMeals
  *
  */
 mealIdsToTypes(_, [], 0, _).

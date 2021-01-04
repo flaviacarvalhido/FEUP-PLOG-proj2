@@ -13,6 +13,8 @@ mainMenu:- clearConsole, displayMainMenu, nl, write('What do you want to do?   :
 
 problemMenu:-	clearConsole, displayProblem, getInputAndValidate(0, 0, _).
 
+
+
 /*
  * displayMainMenu/0
  *
@@ -87,8 +89,8 @@ displayProblem:-
  *
  */
 handleChoice(0):- clearConsole, write('Quitting...').
-handleChoice(1):- clearConsole, !, test_solve.
-handleChoice(2):- clearConsole, !, test_solve_medium.
-% handleChoice(3):- clearConsole, !, test_solve_large.
+handleChoice(1):- clearConsole, !, test_solve, !, nl, write('Press 0 to go back.'), nl, getInputAndValidate(0, 0, _), !, fail.
+handleChoice(2):- clearConsole, !, test_solve_medium, !, nl, write('Press 0 to go back.'), nl, getInputAndValidate(0, 0, _), !, fail.
+handleChoice(3):- clearConsole, !, test_solve_big1, !, nl, write('Press 0 to go back.'), nl, getInputAndValidate(0, 0, _), !, fail.
 handleChoice(4):- problemMenu, !, fail.
 
