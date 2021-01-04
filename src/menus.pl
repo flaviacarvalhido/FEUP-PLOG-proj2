@@ -7,10 +7,14 @@
  * Displays the main menu and handles user input
  *
  */
-
 mainMenu:- clearConsole, displayMainMenu, nl, write('What do you want to do?   : '), nl, getInputAndValidate(0, 4, UserChoice), !, \+handleChoice(UserChoice), mainMenu.
 
-
+/*
+ * problemMenu/0
+ *
+ * Displays the problem description menu and handles user input
+ *
+ */
 problemMenu:-	clearConsole, displayProblem, getInputAndValidate(0, 0, _).
 
 
